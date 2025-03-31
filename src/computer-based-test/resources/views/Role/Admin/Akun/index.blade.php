@@ -36,13 +36,15 @@
             <div class="w-full md:w-1/4 bg-gray-200 h-screen p-4">
                 <ul>
                     <li class="mb-4">
-                        <a href="#" class="flex items-center text-gray-700 bg-white p-2 rounded-lg shadow hover:bg-gray-300">
+                        <a href="#"
+                            class="flex items-center text-gray-700 bg-white p-2 rounded-lg shadow hover:bg-gray-300">
                             <i class="fa-solid fa-circle-user mr-4"></i>
                             Operator
                         </a>
                     </li>
                     <li class="mb-4">
-                        <a href="{{ route('Admin.Bisnis.index') }}" class="flex items-center text-gray-700 p-2 rounded-lg hover:bg-gray-300">
+                        <a href="{{ route('Admin.Bisnis.index') }}"
+                            class="flex items-center text-gray-700 p-2 rounded-lg hover:bg-gray-300">
                             <i class="fa-solid fa-money-bill-wave mr-4"></i>
                             Bisnis
                         </a>
@@ -60,17 +62,18 @@
                 <div class="bg-white p-4 md:p-6 rounded-lg shadow-md">
                     <h2 class="text-xl font-bold mb-4">Operator Information</h2>
                     <div class="space-y-4">
-                        @foreach ($users as $user)
+                        @foreach ($operators as $operator)
                             <div
                                 class="bg-gray-300 p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
                                 <div class="mb-4 md:mb-0">
-                                    <h3 class="font-bold">{{ $user->name }}</h3>
-                                    <p>Email: {{ $user->email }}</p>
-                                    <p>Status Akun: {{ $user->status ?? 'Aktif' }}</p>
+                                    <h3 class="font-bold">{{ $operators['name'] }}</h3>
+                                    <p>Email: {{ $operators['email'] }}</p>
+                                    <p>Durasi {{ $operators['durasi'] }}</p>
+                                    <p>Status Akun: {{ $operators['status_aktif'] }}</p>
                                 </div>
                                 <div class="flex space-x-5">
                                     <div>
-                                        <form action="{{ route('Admin.Akun.destroy', $user->id) }}" method="POST"
+                                        <form action="{{ route('Admin.Akun.destroy', $operators->id) }}" method="POST"
                                             onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun ini?');">
                                             @csrf
                                             @method('DELETE')
@@ -80,7 +83,7 @@
                                         </form>
                                     </div>
                                     <div>
-                                        <form action="{{ route('Admin.Akun.edit', $user->id) }}" method="GET">
+                                        <form action="{{ route('Admin.Akun.edit', $operators->id) }}" method="GET">
                                             <button type="submit" class="text-blue-500 flex items-center">
                                                 <i class="fas fa-edit mr-1"></i> EDIT
                                             </button>

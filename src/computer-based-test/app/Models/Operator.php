@@ -11,11 +11,10 @@ class Operator extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $guarded = [
-        'id',
-    ];
+    protected $guarded = ['id'];
 
-    public function Operator(){
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 }

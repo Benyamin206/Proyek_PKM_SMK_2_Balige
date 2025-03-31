@@ -1,5 +1,7 @@
 <?php
 
+// app/Models/Quiz.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,9 +12,7 @@ class Quiz extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $guarded = [
-        'id',
-    ];
+    protected $guarded = ['id'];
 
     public function course()
     {
@@ -24,8 +24,8 @@ class Quiz extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function quizSoals()
+    public function nilai()
     {
-        return $this->hasMany(QuizSoal::class, 'quiz_id', 'id');
+        return $this->hasMany(Nilai::class);
     }
 }

@@ -4,21 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class CourseController extends Controller
 {
+    protected $client;
+
+    public function __construct()
+    {
+        $this->client = new Client([
+            'base_uri' => 'http://localhost:8080/', 
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $courses = Course::orderBy('id', 'DESC')->get();
-        return view('Role.Guru.Course.index', [
-            'courses' => $courses,
-        ]);
+        $response = $this->client->get('courses');
+        $courses = json_decode($response->getBody()->getContents(), true)['data'];
+        return view('Role.Guru.Course.index', compact('courses'));
     }
 
     /**
@@ -42,46 +50,40 @@ class CourseController extends Controller
 
         $validated['password'] = Hash::make($validated['password']);
 
-        DB::beginTransaction();
+        $response = $this->client->post('courses', [
+            'json' => $validated
+        ]);
 
-        try {
-            Course::create($validated);
-            DB::commit();
-
-            return redirect()->route('Guru.Course.index')->with('success', 'Course created successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $error = ValidationException::withMessages([
-                'system_error' => ['System Error: ' . $e->getMessage()],
-            ]);
-
-            throw $error;
-        }
+        return redirect()->route('Guru.Course.index')->with('success', 'Course created successfully.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Course $course)
+    public function show(string $id)
     {
-        return view('Role.Guru.Course.index', compact('course'));
+        $response = $this->client->get("courses/{$id}");
+        $course = json_decode($response->getBody()->getContents(), true)['data'];
+        return view('Role.Guru.Course.show', compact('course'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Course $course)
+    public function edit(string $id)
     {
+        $response = $this->client->get("courses/{$id}");
+        $course = json_decode($response->getBody()->getContents(), true)['data'];
         return view('Role.Guru.Course.edit', compact('course'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Course $course)
+    public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            "nama_course" => 'required|string|max:20|unique:courses,nama_course,' . $course->id,
+            "nama_course" => 'required|string|max:20|unique:courses,nama_course,' . $id,
             "password" => 'nullable|string|min:8|confirmed',
             "user_id" => 'required|exists:users,id',
         ]);
@@ -92,42 +94,19 @@ class CourseController extends Controller
             unset($validated['password']);
         }
 
-        DB::beginTransaction();
+        $response = $this->client->put("courses/{$id}", [
+            'json' => $validated
+        ]);
 
-        try {
-            $course->update($validated);
-            DB::commit();
-
-            return redirect()->route('Guru.Course.index')->with('success', 'Course updated successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $error = ValidationException::withMessages([
-                'system_error' => ['System Error: ' . $e->getMessage()],
-            ]);
-
-            throw $error;
-        }
+        return redirect()->route('Guru.Course.index')->with('success', 'Course updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Course $course)
+    public function destroy(string $id)
     {
-        DB::beginTransaction();
-
-        try {
-            $course->delete();
-            DB::commit();
-
-            return redirect()->route('Guru.Course.index')->with('success', 'Course deleted successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $error = ValidationException::withMessages([
-                'system_error' => ['System Error: ' . $e->getMessage()],
-            ]);
-
-            throw $error;
-        }
+        $response = $this->client->delete("courses/{$id}");
+        return redirect()->route('Guru.Course.index')->with('success', 'Course deleted successfully.');
     }
 }

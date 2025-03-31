@@ -10,9 +10,7 @@ class Ujian extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $guarded = [
-        'id',
-    ];
+    protected $guarded = ['id'];
 
     public function course()
     {
@@ -24,8 +22,8 @@ class Ujian extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function ujianSoals()
+    public function nilai()
     {
-        return $this->hasMany(UjianSoal::class, 'ujian_id', 'id');
+        return $this->hasMany(Nilai::class);
     }
 }

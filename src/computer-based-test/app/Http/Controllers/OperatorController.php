@@ -3,18 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\Operator; 
 use Illuminate\Http\Request;
+use GuzzleHttp\Client;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 class OperatorController extends Controller
 {
+    protected $client;
+
+    public function __construct()
+    {
+        $this->client = new Client([
+            'base_uri' => 'http://localhost:8080/', 
+        ]);
+    }
+
     public function index()
     {
-        $users = User::role('Operator')->get();
-        return view('Role.Admin.Akun.index', compact('users'));
+        $response = $this->client->get('operators');
+        $users = auth()->user();
+        $data = json_decode($response->getBody()->getContents(), true);
+        if (isset($data['data'])) {
+            $operators = $data['data'];
+        } else {
+            $operators = [];
+        }
+    
+        return view('Role.Admin.Akun.index', compact('operators', 'users'));
     }
 
     /**
@@ -32,22 +48,26 @@ class OperatorController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'nama_sekolah' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'durasi' => 'required|integer',
         ]);
-    
+
         $user = User::create([
-            'name' => $request->name,
+            'name' => $request->nama_sekolah,
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
-    
-        \Log::info('Assigning role Operator to user:', ['id' => $user->id]);
-    
-        $user->assignRole('Operator');
 
-        \Log::info('Role assigned:', ['roles' => $user->getRoleNames()->toArray()]);
+        $operator = Operator::create([
+            'nama_sekolah' => $request->nama_sekolah,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'user_id' => $user->id, 
+            'durasi' => $request->durasi, 
+        ]);
+        $user->assignRole('Operator');
     
         return redirect()->route('Admin.Akun.index')->with('success', 'Akun operator berhasil dibuat.');
     }
@@ -55,79 +75,51 @@ class OperatorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(string $id)
     {
-        if (!$user->hasRole('Operator')) {
-            abort(403, 'Unauthorized action.');
-        }
-        
-        return view('Role.Admin.Akun.index', compact('user'));
+        $response = $this->client->get("operators/{$id}");
+        $operator = json_decode($response->getBody()->getContents(), true)['data'];
+        return view('Role.Admin.Akun.show', compact('operator'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(User $user)
+    public function edit(string $id)
     {
-        \Log::info('User yang sedang login:', [
-            'id' => auth()->user()->id,
-            'roles' => auth()->user()->getRoleNames()->toArray(),
-        ]);
-    
-        \Log::info('User yang sedang diakses:', [
-            'id' => $user->id,
-            'roles' => $user->getRoleNames()->toArray(),
-        ]);
-
-        if (!auth()->user()->hasRole('Admin')) {
-            abort(403, 'Unauthorized action.');
-        }
-        if (!$user->hasRole('Operator')) {
-            abort(403, 'Unauthorized action.');
-        }
-    
-        return view('Role.Admin.Akun.edit', compact('user'));
+        $response = $this->client->get("operators/{$id}");
+        $operator = json_decode($response->getBody()->getContents(), true)['data'];
+        return view('Role.Admin.Akun.edit', compact('operator'));
     }
+
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request, string $id)
     {
-        if (!auth()->user()->hasRole('Admin')) {
-            abort(403, 'Unauthorized action.');
-        }
-        if (!$user->hasRole('Operator')) {
-            abort(403, 'Unauthorized action.');
-        }
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'nama_sekolah' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
         ]);
-        $user->name = $request->name;
-        $user->email = $request->email;
-    
-        if ($request->filled('password')) {
-            $request->validate(['password' => 'string|min:8|confirmed']);
-            $user->password = bcrypt($request->password);
-        }
-    
-        $user->save();
-    
+
+        // Update operator melalui API Go
+        $response = $this->client->put("operators/{$id}", [
+            'json' => [
+                'nama_sekolah' => $request->nama_sekolah,
+                'email' => $request->email,
+                'password' => $request->filled('password') ? bcrypt($request->password) : null,
+            ]
+        ]);
+
         return redirect()->route('Admin.Akun.index')->with('success', 'Akun operator berhasil diperbarui.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(string $id)
     {
-$user = User::find($id);
-
-if (!$user) {
-    return response()->massage(['message' => 'User  not found'], 404);
-}
-$user->delete();
-    
+        $response = $this->client->delete("operators/{$id}");
         return redirect()->route('Admin.Akun.index')->with('success', 'Akun operator berhasil dihapus.');
     }
 }

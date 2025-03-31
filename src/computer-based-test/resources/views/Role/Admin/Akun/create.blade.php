@@ -53,7 +53,7 @@
                     @csrf
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Nama Sekolah<span class="text-red-500">*</span></label>
-                        <input type="text" name="name" class="w-full border border-gray-400 p-2 rounded-lg" required>
+                        <input type="text" name="nama_sekolah" class="w-full border border-gray-400 p-2 rounded-lg" required>
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Email<span class="text-red-500">*</span></label>
@@ -66,6 +66,10 @@
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Konfirmasi Password<span class="text-red-500">*</span></label>
                         <input type="password" name="password_confirmation" class="w-full border border-gray-400 p-2 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Durasi<span class="text-red-500">*</span></label>
+                        <input type="number" name="durasi" placeholder="12" class="w-full border border-gray-400 p-2 rounded-lg" required>
                     </div>
                     <div class="flex justify-end">
                         <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center">

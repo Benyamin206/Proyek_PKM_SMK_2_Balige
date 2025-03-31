@@ -4,16 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\Kurikulum;
 use Illuminate\Http\Request;
+use GuzzleHttp\Client;
 
 class KurikulumController extends Controller
 {
+    protected $client;
+
+    public function __construct()
+    {
+        $this->client = new Client([
+            'base_uri' => 'http://localhost:8080/', 
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $kurikulums = Kurikulum::all(); 
-        return view('Role.Operator.Kurikulum.index', compact('kurikulums')); 
+        $response = $this->client->get('kurikulum');
+        $kurikulums = json_decode($response->getBody()->getContents(), true)['data'];
+        return view('Role.Operator.Kurikulum.index', compact('kurikulums'));
     }
 
     /**
@@ -34,7 +45,9 @@ class KurikulumController extends Controller
             'user_id' => 'required|exists:users,id',
         ]);
 
-        Kurikulum::create($request->all());
+        $response = $this->client->post('kurikulum', [
+            'json' => $request->only(['nama_kurikulum', 'user_id'])
+        ]);
 
         return redirect()->route('Operator.Kurikulum.index')->with('success', 'Kurikulum berhasil ditambahkan.');
     }
@@ -42,30 +55,36 @@ class KurikulumController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Kurikulum $kurikulum)
+    public function show(string $id)
     {
-        return view('Role.Operator.Kurikulum.index', compact('kurikulum'));
+        $response = $this->client->get("kurikulum/{$id}");
+        $kurikulum = json_decode($response->getBody()->getContents(), true)['data'];
+        return view('Role.Operator.Kurikulum.show', compact('kurikulum'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Kurikulum $kurikulum)
+    public function edit(string $id)
     {
+        $response = $this->client->get("kurikulum/{$id}");
+        $kurikulum = json_decode($response->getBody()->getContents(), true)['data'];
         return view('Role.Operator.Kurikulum.edit', compact('kurikulum'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Kurikulum $kurikulum)
+    public function update(Request $request, string $id)
     {
         $request->validate([
-            'nama_kurikulum' => 'required|string|max:255|unique:kurikulums,nama_kurikulum,' . $kurikulum->id,
+            'nama_kurikulum' => 'required|string|max:255|unique:kurikulums,nama_kurikulum,' . $id,
             'user_id' => 'required|exists:users,id',
         ]);
 
-        $kurikulum->update($request->all());
+        $response = $this->client->put("kurikulum/{$id}", [
+            'json' => $request->only(['nama_kurikulum', 'user_id'])
+        ]);
 
         return redirect()->route('Operator.Kurikulum.index')->with('success', 'Kurikulum berhasil diperbarui.');
     }
@@ -73,10 +92,9 @@ class KurikulumController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Kurikulum $kurikulum)
+    public function destroy(string $id)
     {
-        $kurikulum->delete();
-
+        $response = $this->client->delete("kurikulum/{$id}");
         return redirect()->route('Operator.Kurikulum.index')->with('success', 'Kurikulum berhasil dihapus.');
     }
 }

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->datetime('Waktu_Mulai');
             $table->datetime('Waktu_Selesai');
             $table->datetime('Waktu_Lihat');
-            $table->integer('Nilai');
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->softDeletes();

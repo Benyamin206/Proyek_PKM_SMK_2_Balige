@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Siswa</title>
+    <title>Operator | Siswa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
@@ -76,12 +76,6 @@
         </div>
         <div class="w-full md:w-3/4 p-8">
             <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                <select class="border border-gray-300 rounded-lg p-2">
-                    <option>Pilih Kelas</option>
-                    @foreach ($kelas as $k)
-                        <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
-                    @endforeach
-                </select>
                 <form action="{{ route('Operator.Siswa.import') }}" method="POST" enctype="multipart/form-data"
                     class="flex justify-end mb-4">
                     @csrf

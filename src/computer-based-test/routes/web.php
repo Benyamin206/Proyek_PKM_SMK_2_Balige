@@ -30,103 +30,74 @@ Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login'
 Route::post('/', [AuthenticatedSessionController::class, 'store'])->name('login.store');
 
 // Halaman dashboard
-Route::get('/dashboard', function (){
+Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Group route yang memerlukan autentikasi
 Route::middleware('auth')->group(function () {
+    // Route untuk profil pengguna
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Route untuk Admin
-    Route::prefix('Admin')->name('Admin.')->group(function(){
-        Route::resource('/Akun', OperatorController::class)->parameters(['Akun' => 'user'])->middleware('role:Admin');
-
-        Route::resource('/Bisnis', BisnisController::class)->middleware('role:Admin');
+    Route::prefix('Admin')->name('Admin.')->middleware('role:Admin')->group(function () {
+        Route::resource('/Akun', OperatorController::class)->parameters(['Akun' => 'user']);
+        Route::resource('/Bisnis', BisnisController::class);
     });
 
     // Route untuk Guru
-    Route::prefix('Guru')->name('Guru.')->group(function(){
-        Route::resource('/Course', CourseController::class)->middleware('role:Guru');
-
-        Route::resource('/Siswa', SiswaController::class)->middleware('role:Guru');
-
-        Route::resource('/LatihanSoal', LatihanSoalController::class)->middleware('role:Guru');
-
-        Route::resource('/LatihanSoalSoal', LatihanSoalSoalController::class)->middleware('role:Guru');
-
-        Route::resource('/Kelas', KelasController::class)->middleware('role:Guru');
-
-        Route::resource('/MataPelajaran', MataPelajaranController::class)->middleware('role:Guru');
-
-        Route::resource('/Quiz', QuizController::class)->middleware('role:Guru');
-        
-        Route::resource('/QuizSoal', QuizSoalController::class)->middleware('role:Guru');
-        
-        Route::resource('/Ujian', UjianController::class)->middleware('role:Guru');
-        
-        Route::resource('/UjianSoal', UjianSoalController::class)->middleware('role:Guru');
-        
-        Route::resource('/Kurikulum', KurikulumController::class)->middleware('role:Guru');
-        
-        Route::resource('/Attempt', AttemptController::class)->middleware('role:Guru');
-
-        Route::resource('/JawabanSiswaLatihanSoal', JawabanSiswaLatihanSoalController::class)->middleware('role:Guru');
-
-        Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class)->middleware('role:Guru');
-        
-        Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class)->middleware('role:Guru');
+    Route::prefix('Guru')->name('Guru.')->middleware('role:Guru')->group(function () {
+        Route::resource('/Course', CourseController::class);
+        Route::resource('/Siswa', SiswaController::class);
+        Route::resource('/LatihanSoal', LatihanSoalController::class);
+        Route::resource('/LatihanSoalSoal', LatihanSoalSoalController::class);
+        Route::resource('/Kelas', KelasController::class);
+        Route::resource('/MataPelajaran', MataPelajaranController::class);
+        Route::resource('/Quiz', QuizController::class);
+        Route::resource('/QuizSoal', QuizSoalController::class);
+        Route::resource('/Ujian', UjianController::class);
+        Route::resource('/UjianSoal', UjianSoalController::class);
+        Route::resource('/Kurikulum', KurikulumController::class);
+        Route::resource('/Attempt', AttemptController::class);
+        Route::resource('/JawabanSiswaLatihanSoal', JawabanSiswaLatihanSoalController::class);
+        Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
+        Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);
     });
 
     // Route untuk Operator
-    Route::prefix('Operator')->name('Operator.')->group(function(){
-        Route::resource('/Guru', GuruController::class)->middleware('role:Operator');
-        Route::get('/Guru/upload', [GuruController::class, 'upload'])->name('Guru.upload')->middleware('role:Operator');
-        Route::post('/Guru/import', [GuruController::class, 'import'])->name('Guru.import')->middleware('role:Operator');
-        Route::get('/Guru/upload', [GuruController::class, 'upload'])->name('Guru.upload')->middleware('role:Operator');
-        Route::post('/Guru/import', [GuruController::class, 'import'])->name('Guru.import')->middleware('role:Operator');
+    Route::prefix('Operator')->name('Operator.')->middleware('role:Operator')->group(function () {
+        Route::resource('/Guru', GuruController::class);
+        Route::get('/Guru/upload', [GuruController::class, 'upload'])->name('Guru.upload');
+        Route::post('/Guru/import', [GuruController::class, 'import'])->name('Guru.import');
 
-        Route::resource('/Siswa', SiswaController::class)->middleware('role:Operator');
-        Route::get('/Siswa/{Siswa}/edit', [SiswaController::class, 'edit'])->name('Siswa.edit')->middleware('role:Operator');
-        Route::patch('/Siswa/{Siswa}', [SiswaController::class, 'update'])->name('Siswa.update')->middleware('role:Operator');
-        Route::get('/Siswa/upload', [SiswaController::class, 'upload'])->name('Siswa.upload')->middleware('role:Operator');
-        Route::post('/Siswa/import', [SiswaController::class, 'import'])->name('Siswa.import')->middleware('role:Operator');
+        Route::resource('/Siswa', SiswaController::class);
+        Route::get('/Siswa/upload', [SiswaController::class, 'upload'])->name('Siswa.upload');
+        Route::post('/Siswa/import', [SiswaController::class, 'import'])->name('Siswa.import');
 
-        Route::resource('/Kelas', KelasController::class)->middleware('role:Operator');
-
-        Route::resource('/Kurikulum', KurikulumController::class)->middleware('role:Operator');
-
-        Route::resource('/MataPelajaran', MataPelajaranController::class)->middleware('role:Operator');
+        Route::resource('/Kelas', KelasController::class);
+        Route::resource('/Kurikulum', KurikulumController::class);
+        Route::resource('/MataPelajaran', MataPelajaranController::class);
     });
 
     // Route untuk Siswa
-    Route::prefix('Siswa')->name('Siswa.')->group(function(){
-        Route::resource('/Course', CourseController::class)->middleware('role:Siswa');
-        
-        Route::resource('/Quiz', QuizController::class)->middleware('role:Siswa');
-        
-        Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class)->middleware('role:Siswa');
-        
-        Route::resource('/Ujian', UjianController::class)->middleware('role:Siswa');
-        
-        Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class)->middleware('role:Siswa');
-        
-        Route::resource('/LatihanSoal', LatihanSoalController::class)->middleware('role:Siswa');
-        
-        Route::resource('/JawabanSiswaLatihanSoal', JawabanSiswaLatihanSoalController::class)->middleware('role:Siswa');
-        
-        Route::resource('/MataPelajaran', MataPelajaranController::class)->middleware('role:Siswa');
-        
-        Route::resource('/Kurikulum', KurikulumController::class)->middleware('role:Siswa');
-        
-        Route::resource('/Kelas', KelasController::class)->middleware('role:Siswa');
-        
-        Route::resource('/Profil', ProfilController::class)->middleware('role:Siswa');
+    Route::prefix('Siswa')->name('Siswa.')->middleware('role:Siswa')->group(function () {
+        Route::resource('/Course', CourseController::class);
+        Route::resource('/Quiz', QuizController::class);
+        Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
+        Route::resource('/Ujian', UjianController::class);
+        Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);
+        Route::resource('/LatihanSoal', LatihanSoalController::class);
+        Route::resource('/JawabanSiswaLatihanSoal', JawabanSiswaLatihanSoalController::class);
+        Route::resource('/MataPelajaran', MataPelajaranController::class);
+        Route::resource('/Kurikulum', KurikulumController::class);
+        Route::resource('/Kelas', KelasController::class);
+        Route::resource('/Profil', ProfilController::class);
     });
 });
 
+// Route untuk logout
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

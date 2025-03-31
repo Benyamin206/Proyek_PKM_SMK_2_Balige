@@ -1,8 +1,9 @@
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizHub</title>
+    <title>Operator | Kelas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
@@ -12,6 +13,7 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-100">
     <!-- Header -->
     <div class="bg-white shadow p-4 flex justify-between items-center">
@@ -40,7 +42,8 @@
         <div class="w-full md:w-1/4 bg-gray-200 h-screen p-4">
             <ul>
                 <li class="mb-4">
-                    <a href="{{ route('Operator.Siswa.index') }}" class="flex items-center text-gray-700 p-2 rounded-lg">
+                    <a href="{{ route('Operator.Siswa.index') }}"
+                        class="flex items-center text-gray-700 p-2 rounded-lg">
                         <i class="fas fa-user-graduate text-teal-500 mr-2"></i>
                         Daftar Siswa
                     </a>
@@ -52,7 +55,8 @@
                     </a>
                 </li>
                 <li class="mb-4">
-                    <a href="{{ route('Operator.MataPelajaran.index') }}" class="flex items-center text-gray-700 p-2 rounded-lg">
+                    <a href="{{ route('Operator.MataPelajaran.index') }}"
+                        class="flex items-center text-gray-700 p-2 rounded-lg">
                         <i class="fas fa-book text-teal-500 mr-2"></i>
                         Mata Pelajaran
                     </a>
@@ -64,7 +68,8 @@
                     </a>
                 </li>
                 <li class="mb-4">
-                    <a href="{{ route('Operator.Kurikulum.index') }}" class="flex items-center text-gray-700 p-2 rounded-lg">
+                    <a href="{{ route('Operator.Kurikulum.index') }}"
+                        class="flex items-center text-gray-700 p-2 rounded-lg">
                         <i class="fas fa-calendar-alt text-teal-500 mr-2"></i>
                         Kurikulum
                     </a>
@@ -81,22 +86,23 @@
             </div>
             <h1 class="text-lg font-bold mb-4">Class Information</h1>
             <div class="space-y-4">
-                @foreach (@kelas as @kelases)
+                @foreach ($kelas as $kelases)
                     <div class="bg-gray-300 p-4 rounded flex justify-between items-center">
-                        <h4 class="text-lg text-gray-700">Kelas {{ $kelas->name }}</h4>
-                            <a href="{{ route('Operator.Kelas.edit') }}" class="text-gray-500 flex items-center">
-                                <i class="fas fa-pen mr-1"></i> EDIT
-                            </a>
+                        <h4 class="text-lg text-gray-700">{{ $kelases->nama_kelas }}</h4>
+                        <a href="{{ route('Operator.Kelas.edit', $kelases->id) }}"
+                            class="text-gray-500 flex items-center">
+                            <i class="fas fa-pen mr-1"></i> EDIT
+                        </a>
                     </div>
                 @endforeach
-
             </div>
         </div>
     </div>
     <script>
-            document.querySelector('.dropdown').addEventListener('click', function() {
-                this.querySelector('.dropdown-menu').classList.toggle('hidden');
-            });
+        document.querySelector('.dropdown').addEventListener('click', function() {
+            this.querySelector('.dropdown-menu').classList.toggle('hidden');
+        });
     </script>
 </body>
+
 </html>

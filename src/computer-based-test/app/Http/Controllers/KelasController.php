@@ -4,16 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Models\Kelas;
 use Illuminate\Http\Request;
+use GuzzleHttp\Client;
 
 class KelasController extends Controller
 {
+    protected $client;
+
+    public function __construct()
+    {
+        $this->client = new Client([
+            'base_uri' => 'http://localhost:8080/', 
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $kelas = Kelas::all(); 
-        return view('Role.Operator.Kelas.index', compact('kelas')); 
+        $response = $this->client->get('kelas');
+        $kelas = json_decode($response->getBody()->getContents(), true)['data'];
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        return view('Role.Operator.Kelas.index', compact('kelas', 'user'));
     }
 
     /**
@@ -21,7 +36,11 @@ class KelasController extends Controller
      */
     public function create()
     {
-        return view('Role.Operator.Kelas.create'); 
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        return view('Role.Operator.Kelas.create', compact('user'));
     }
 
     /**
@@ -31,10 +50,14 @@ class KelasController extends Controller
     {
         $request->validate([
             'nama_kelas' => 'required|string|max:255|unique:kelas',
-            'user_id' => 'required|exists:users,id',
         ]);
 
-        Kelas::create($request->all());
+        $response = $this->client->post('kelas', [
+            'json' => [
+                'nama_kelas' => $request->nama_kelas,
+                'user_id' => auth()->id(),
+            ]
+        ]);
 
         return redirect()->route('Operator.Kelas.index')->with('success', 'Kelas berhasil ditambahkan.');
     }
@@ -42,30 +65,38 @@ class KelasController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Kelas $kelas)
+    public function show(string $id)
     {
-        return view('Role.Operator.Kelas.index', compact('kelas')); 
+        $response = $this->client->get("kelas/{$id}");
+        $kelas = json_decode($response->getBody()->getContents(), true)['data'];
+        return view('Role.Operator.Kelas.show', compact('kelas'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Kelas $kelas)
+    public function edit(string $id)
     {
-        return view('Role.Operator.Kelas.edit', compact('kelas'));
+        $response = $this->client->get("kelas/{$id}");
+        $kelas = json_decode($response->getBody()->getContents(), true)['data'];
+        $user = auth()->user();
+        return view('Role.Operator.Kelas.edit', compact('kelas', 'user'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Kelas $kelas)
+    public function update(Request $request, string $id)
     {
         $request->validate([
-            'nama_kelas' => 'required|string|max:255|unique:kelas,nama_kelas,' . $kelas->id,
-            'user_id' => 'required|exists:users,id',
+            'nama_kelas' => 'required|string|max:255|unique:kelas,nama_kelas,' . $id,
         ]);
 
-        $kelas->update($request->all());
+        $response = $this->client->put("kelas/{$id}", [
+            'json' => [
+                'nama_kelas' => $request->nama_kelas,
+            ]
+        ]);
 
         return redirect()->route('Operator.Kelas.index')->with('success', 'Kelas berhasil diperbarui.');
     }
@@ -73,10 +104,9 @@ class KelasController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Kelas $kelas)
+    public function destroy(string $id)
     {
-        $kelas->delete();
-
+        $response = $this->client->delete("kelas/{$id}");
         return redirect()->route('Operator.Kelas.index')->with('success', 'Kelas berhasil dihapus.');
     }
 }
