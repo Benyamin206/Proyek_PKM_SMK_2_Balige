@@ -25,12 +25,10 @@ class GuruImport implements ToModel, WithStartRow, WithValidation
      */
     public function model(array $row)
     {
-        // Cek apakah NIS sudah ada di tabel siswa
         if (Siswa::where('nis', $row[1])->exists()) {
             throw new \Exception("NIS {$row[1]} sudah ada di tabel siswa.");
         }
     
-        // Cek apakah NIS sudah ada di tabel guru
         if (Guru::where('nip', $row[1])->exists()) {
             throw new \Exception("NIP {$row[1]} sudah ada di tabel guru.");
         }

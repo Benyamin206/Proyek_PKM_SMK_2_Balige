@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('operator', function (Blueprint $table) {
+        Schema::create('operators', function (Blueprint $table) {
             $table->id();
             $table->string('nama_sekolah');
             $table->string('email')->unique();
             $table->string('password');
-            $table->tinyInteger('status_aktif')->default(1);
             $table->integer('durasi')->default(12);
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users'); // Foreign key referencing the users table
+            $table->enum('status_aktif', ['aktif', 'tidak aktif'])->default('aktif');
             $table->timestamps();
         });
     }

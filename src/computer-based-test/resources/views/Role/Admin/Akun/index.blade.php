@@ -66,14 +66,14 @@
                             <div
                                 class="bg-gray-300 p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
                                 <div class="mb-4 md:mb-0">
-                                    <h3 class="font-bold">{{ $operators['name'] }}</h3>
-                                    <p>Email: {{ $operators['email'] }}</p>
-                                    <p>Durasi {{ $operators['durasi'] }}</p>
-                                    <p>Status Akun: {{ $operators['status_aktif'] }}</p>
+                                    <h3 class="font-bold">{{ $operator['nama_sekolah'] }}</h3>
+                                    <p>Email   : {{ $operator['email'] }}</p>
+                                    <p>Durasi : {{ $operator['durasi'] }}</p>
+                                    <p>Status Aktif : {{ $operator['status_aktif'] }}</p>
                                 </div>
                                 <div class="flex space-x-5">
                                     <div>
-                                        <form action="{{ route('Admin.Akun.destroy', $operators->id) }}" method="POST"
+                                        <form action="{{ route('Admin.Akun.destroy', $operator['id']) }}" method="POST"
                                             onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun ini?');">
                                             @csrf
                                             @method('DELETE')
@@ -83,7 +83,7 @@
                                         </form>
                                     </div>
                                     <div>
-                                        <form action="{{ route('Admin.Akun.edit', $operators->id) }}" method="GET">
+                                        <form action="{{ route('Admin.Akun.edit', $operator['id']) }}" method="GET">
                                             <button type="submit" class="text-blue-500 flex items-center">
                                                 <i class="fas fa-edit mr-1"></i> EDIT
                                             </button>

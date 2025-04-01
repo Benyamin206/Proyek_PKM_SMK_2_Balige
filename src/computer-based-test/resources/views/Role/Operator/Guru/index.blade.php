@@ -80,11 +80,11 @@
         <!-- Main Content -->
         <div class="w-full md:w-3/4 p-8">
             <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                <form action="{{ route('Operator.Guru.import') }}" method="POST" enctype="multipart/form-data"
-                    class="flex justify-end mb-4 ml-auto">
+                <form id="importForm" action="{{ route('Operator.Guru.import') }}" method="POST"
+                    enctype="multipart/form-data" class="flex justify-end mb-4">
                     @csrf
                     <input type="file" id="fileInput" name="file" class="hidden" accept=".xlsx, .xls" />
-                    <button type="submit" id="importButton"
+                    <button type="button" id="importButton"
                         class="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center">
                         <i class="fas fa-upload mr-2"></i> Import File
                     </button>
@@ -126,19 +126,28 @@
             </div>
         </div>
         <script>
+            const importButton = document.getElementById('importButton');
+            const fileInput = document.getElementById('fileInput');
+            const importForm = document.getElementById('importForm');
+
             document.querySelector('.dropdown').addEventListener('click', function() {
                 this.querySelector('.dropdown-menu').classList.toggle('hidden');
             });
-            document.getElementById('importButton').addEventListener('click', function(event) {
-                event.preventDefault();
-                document.getElementById('fileInput').click();
-            });
-            document.getElementById('fileInput').addEventListener('change', function(event) {
+
+            importButton.addEventListener('click', handleImportButtonClick);
+            fileInput.addEventListener('change', handleFileInputChange);
+
+            function handleImportButtonClick(event) {
+                // Trigger the file input click
+                fileInput.click();
+            }
+
+            function handleFileInputChange(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    document.querySelector('form').submit();
+                    importForm.submit();
                 }
-            });
+            }
         </script>
 </body>
 

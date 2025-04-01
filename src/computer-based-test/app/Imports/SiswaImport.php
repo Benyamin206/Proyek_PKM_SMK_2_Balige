@@ -23,26 +23,34 @@ class SiswaImport implements ToModel, WithStartRow, WithValidation
      */
     public function model(array $row)
     {
-        $siswaRole = Role::where('name', 'siswa')->first();
+        if (empty($row[0]) || empty($row[1]) || empty($row[2])) {
+            \Log::warning('Data tidak lengkap untuk baris: ' . json_encode($row));
+            return null;
+        }
     
-        if (!$siswaRole) {
+        $SiswaRole = Role::where('name', 'siswa')->first();
+        
+        if (!$SiswaRole) {
             throw new \Exception('Role "siswa" tidak ditemukan.');
         }
-
-        $user = User::create([
+    
+        // Buat pengguna (User )
+        $user = user::create([
             'name' => $row[0],
-            'email' => $row[1],
+            'email' => $row[1], // Menggunakan NIS sebagai email
             'password' => Hash::make($row[2]),
         ]);
-
-        $user->assignRole($siswaRole);
-        $siswa = Siswa::create([
+    
+        // Assign role ke pengguna
+        $user->assignRole($SiswaRole);
+    
+        // Buat siswa (Siswa)
+        $siswa = siswa::create([
             'name' => $row[0], 
             'nis' => $row[1],
-            'password' => Hash::make($row[2]), 
-            'user_id' => $user->id,
+            'password' => Hash::make($row[2]), // Simpan password yang sudah di-hash
         ]);
-    
+        
         return $siswa;
     }
 
@@ -50,8 +58,16 @@ class SiswaImport implements ToModel, WithStartRow, WithValidation
     {
         return [
             '0' => 'required|string',
-            '1' => 'required|numeric',
-            '2' => 'required|string',
+            '1' => 'required|numeric|unique:siswa,nis', // Pastikan NIS unik
+            '2' => 'required|string|min:6', // Pastikan password minimal 6 karakter
         ];
+    }
+
+    public function onFailure(\Maatwebsite\Excel\Validators\Failure ...$failures)
+    {
+        // Log the validation errors
+        foreach ($failures as $failure) {
+            \Log::error('Import validation failed: ', $failure->errors());
+        }
     }
 }

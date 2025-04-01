@@ -8,14 +8,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Kelas extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $guarded = [
         'id',
     ];
 
-    public function Kelas(){
-        return $this->belongsTo(Operator::class);
-    }
+    protected $fillable = [
+        'nama_kelas',
+        'user_id',
+    ];
 
+    // Relasi dengan model User (Operator)
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

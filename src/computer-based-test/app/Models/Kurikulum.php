@@ -14,10 +14,16 @@ class Kurikulum extends Model
         'id',
     ];
 
+    protected $fillable = [
+        'nama_kurikulum',
+        'user_id',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class); 
     }
+
     public function mataPelajaran()
     {
         return $this->hasMany(MataPelajaran::class, 'kurikulum_id', 'id');

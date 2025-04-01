@@ -6,28 +6,20 @@ use App\Models\Guru;
 use App\Models\User;
 use App\Imports\GuruImport;
 use Illuminate\Http\Request;
-use GuzzleHttp\Client;
 use Maatwebsite\Excel\Facades\Excel;
 
 class GuruController extends Controller
 {
-    protected $client;
-
-    public function __construct()
-    {
-        $this->client = new Client([
-            'base_uri' => 'http://localhost:8080/', // Ganti dengan URL API Go Anda
-        ]);
-    }
-
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $response = $this->client->get('gurus');
-        $gurus = json_decode($response->getBody()->getContents(), true)['data'];
+        $gurus = Guru::with('user')->get(); // Mengambil semua guru beserta relasi user
         $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
         return view('Role.Operator.Guru.index', compact('gurus', 'user'));
     }
 
@@ -36,7 +28,7 @@ class GuruController extends Controller
      */
     public function upload()
     {
-        return view('Role.Operator.Guru.index');
+        return view('Role.Operator.Guru.upload'); // Pastikan ada view untuk upload
     }
 
     /**
@@ -51,20 +43,8 @@ class GuruController extends Controller
         if ($request->hasFile('file') && $request->file('file')->isValid()) {
             try {
                 // Menggunakan Maatwebsite Excel untuk membaca file
-                $data = Excel::toArray(new GuruImport, $request->file('file'))[0];
+                Excel::import(new GuruImport, $request->file('file'));
 
-                $gurus = [];
-                foreach ($data as $row) {
-                    $gurus[] = [
-                        'name' => $row[0],
-                        'nip' => $row[1],
-                        'password' => $row[2],
-                    ];
-                }
-                $response = $this->client->post('import-gurus', [
-                    'json' => $gurus
-                ]);
-    
                 return redirect()->route('Operator.Guru.index')->with('success', 'Data guru berhasil diupload.');
             } catch (\Exception $e) {
                 \Log::error('Error during import: ' . $e->getMessage());
@@ -94,12 +74,19 @@ class GuruController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        $response = $this->client->post('gurus', [
-            'json' => [
-                'name' => $request->name,
-                'nip' => $request->nip,
-                'password' => bcrypt($request->password),
-            ]
+        // Buat pengguna (User )
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->nip, // Menggunakan NIP sebagai email
+            'password' => bcrypt($request->password),
+        ]);
+
+        // Buat guru (Guru) dan hubungkan dengan pengguna
+        Guru::create([
+            'name' => $request->name,
+            'nip' => $request->nip,
+            'user_id' => $user->id,
+            'password' => bcrypt($request->password), // Simpan password yang sudah di-hash
         ]);
 
         return redirect()->route('Operator.Guru.index')->with('success', 'Guru berhasil ditambahkan.');
@@ -110,8 +97,7 @@ class GuruController extends Controller
      */
     public function show(string $id)
     {
-        $response = $this->client->get("gurus/{$id}");
-        $guru = json_decode($response->getBody()->getContents(), true)['data'];
+        $guru = Guru::with('user')->findOrFail($id); // Mengambil guru beserta relasi user
         return view('Role.Operator.Guru.show', compact('guru')); 
     }
 
@@ -120,8 +106,7 @@ class GuruController extends Controller
      */
     public function edit(string $id)
     {
-        $response = $this->client->get("gurus/{$id}");
-        $guru = json_decode($response->getBody()->getContents(), true)['data'];
+        $guru = Guru::with('user')->findOrFail($id); // Mengambil guru beserta relasi user
         $user = auth()->user();
         return view('Role.Operator.Guru.edit', compact('guru', 'user'));
     }
@@ -137,18 +122,15 @@ class GuruController extends Controller
             'password' => 'nullable|string|min:6',
         ]);
 
-        $guruData = [
-            'name' => $request->name,
-            'nip' => $request->nip,
-        ];
+        $guru = Guru::findOrFail($id);
+        $guru->name = $request->name;
+        $guru->nip = $request->nip;
 
         if ($request->filled('password')) {
-            $guruData['password'] = bcrypt($request->password);
+            $guru->password = bcrypt($request->password);
         }
 
-        $response = $this->client->put("gurus/{$id}", [
-            'json' => $guruData
-        ]);
+        $guru->save(); // Simpan perubahan
 
         return redirect()->route('Operator.Guru.index')->with('success', 'Guru berhasil diperbarui.');
     }
@@ -158,7 +140,8 @@ class GuruController extends Controller
      */
     public function destroy(string $id)
     {
-        $response = $this->client->delete("gurus/{$id}");
+        $guru = Guru::findOrFail($id);
+        $guru->delete(); // Menghapus guru dari database
         return redirect()->route('Operator.Guru.index')->with('success', 'Guru berhasil dihapus.');
     }
 }

@@ -25,6 +25,8 @@ use App\Http\Controllers\GuruController;
 use App\Http\Controllers\JawabanSoalUjianController;
 use App\Http\Controllers\JawabanSoalQuizController;
 use App\Http\Controllers\JawabanLatihanSoalController;
+use App\Http\Middleware\CheckOperatorStatus;
+
 
 Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
 Route::post('/', [AuthenticatedSessionController::class, 'store'])->name('login.store');
@@ -33,6 +35,7 @@ Route::post('/', [AuthenticatedSessionController::class, 'store'])->name('login.
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 // Group route yang memerlukan autentikasi
 Route::middleware('auth')->group(function () {
@@ -44,8 +47,10 @@ Route::middleware('auth')->group(function () {
     // Route untuk Admin
     Route::prefix('Admin')->name('Admin.')->middleware('role:Admin')->group(function () {
         Route::resource('/Akun', OperatorController::class)->parameters(['Akun' => 'user']);
+        Route::get('/Admin/Akun/{id}/edit', [AkunController::class, 'edit'])->name('Admin.Akun.edit');
         Route::resource('/Bisnis', BisnisController::class);
     });
+    
 
     // Route untuk Guru
     Route::prefix('Guru')->name('Guru.')->middleware('role:Guru')->group(function () {

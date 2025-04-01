@@ -16,10 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('nip')->unique();
             $table->string('password');
-            $table->unsignedBigInteger('user_id')->nullable(); // Kolom user_id
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
-
-            // Foreign key constraint
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

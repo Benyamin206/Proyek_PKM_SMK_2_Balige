@@ -14,6 +14,12 @@ class Course extends Model
         'id',
     ];
 
+    protected $fillable = [
+        'nama_course',
+        'password',
+        'user_id',
+    ];
+
     public function quizzes()
     {
         return $this->hasMany(Quiz::class, 'course_id', 'id');
@@ -26,7 +32,7 @@ class Course extends Model
 
     public function siswa()
     {
-        return $this->hasMany(User::class, 'course_id', 'user_id');
+        return $this->belongsToMany(Siswa::class, 'siswa_courses', 'course_id', 'siswa_id'); // Asumsi ada tabel pivot siswa_courses
     }
 
     public function user()

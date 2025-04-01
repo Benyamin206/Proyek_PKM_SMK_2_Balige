@@ -17,8 +17,57 @@ class Siswa extends Model
 
     protected $fillable = [
         'name',
-        'user_id',
         'nis',
         'password', 
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'nis', 'email'); // Pastikan kolom yang digunakan untuk relasi benar
+    }
+
+    public function gurus()
+    {
+        return $this->belongsToMany(Guru::class);
+    }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class);
+    }
+
+    public function latihanSoals()
+    {
+        return $this->belongsToMany(LatihanSoal::class);
+    }
+
+    public function quizzes()
+    {
+        return $this->belongsToMany(Quiz::class);
+    }
+
+    public function ujians()
+    {
+        return $this->belongsToMany(Ujian::class);
+    }
+
+    public function jawabanSiswa()
+    {
+        return $this->hasMany(JawabanSiswa::class);
+    }
+
+    public function mataPelajarans()
+    {
+        return $this->belongsToMany(MataPelajaran::class);
+    }
+
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class);
+    }
+
+    public function kurikulums()
+    {
+        return $this->belongsToMany(Kurikulum::class);
+    }
 }

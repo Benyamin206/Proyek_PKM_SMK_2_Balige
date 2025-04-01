@@ -4,31 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\Bisnis;
 use Illuminate\Http\Request;
-use GuzzleHttp\Client;
 
 class BisnisController extends Controller
 {
-    protected $client;
-
-    public function __construct()
-    {
-        $this->client = new Client([
-            'base_uri' => 'http://localhost:8080/',
-        ]);
-    }
-
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $response = $this->client->get('bisnis');
-        $bisnises = json_decode($response->getBody()->getContents(), true)['data'];
+        $bisnises = Bisnis::all(); // Mengambil semua data bisnis dari database
         return view('Role.Admin.Bisnis.index', compact('bisnises'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         return view('Role.Admin.Bisnis.create');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -37,27 +35,32 @@ class BisnisController extends Controller
             'jumlah_pendapatan' => 'required|numeric',
         ]);
 
-        $response = $this->client->post('bisnis', [
-            'json' => $request->only(['nama', 'username', 'jumlah_pendapatan'])
-        ]);
+        Bisnis::create($request->only(['nama', 'username', 'jumlah_pendapatan']));
 
         return redirect()->route('Admin.Bisnis.index')->with('success', 'Bisnis berhasil dibuat');
     }
 
+    /**
+     * Display the specified resource.
+     */
     public function show(string $id)
     {
-        $response = $this->client->get("bisnis/{$id}");
-        $bisnis = json_decode($response->getBody()->getContents(), true)['data'];
+        $bisnis = Bisnis::findOrFail($id); // Mengambil data bisnis berdasarkan ID
         return view('Role.Admin.Bisnis.show', compact('bisnis'));
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(string $id)
     {
-        $response = $this->client->get("bisnis/{$id}");
-        $bisnis = json_decode($response->getBody()->getContents(), true)['data'];
+        $bisnis = Bisnis::findOrFail($id); // Mengambil data bisnis berdasarkan ID
         return view('Role.Admin.Bisnis.edit', compact('bisnis'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, string $id)
     {
         $request->validate([
@@ -66,16 +69,20 @@ class BisnisController extends Controller
             'jumlah_pendapatan' => 'required|numeric',
         ]);
 
-        $response = $this->client->put("bisnis/{$id}", [
-            'json' => $request->only(['nama', 'username', 'jumlah_pendapatan'])
-        ]);
+        $bisnis = Bisnis::findOrFail($id); // Mengambil data bisnis berdasarkan ID
+        $bisnis->update($request->only(['nama', 'username', 'jumlah_pendapatan']));
 
         return redirect()->route('Admin.Bisnis.index')->with('success', 'Bisnis berhasil diupdate');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(string $id)
     {
-        $response = $this->client->delete("bisnis/{$id}");
+        $bisnis = Bisnis::findOrFail($id); // Mengambil data bisnis berdasarkan ID
+        $bisnis->delete(); // Menghapus data bisnis
+
         return redirect()->route('Admin.Bisnis.index')->with('success', 'Bisnis berhasil dihapus');
     }
 }

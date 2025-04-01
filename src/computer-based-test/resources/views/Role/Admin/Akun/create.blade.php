@@ -13,8 +13,8 @@
             <div class="relative dropdown">
                 <div class="flex items-center cursor-pointer">
                     <div class="flex flex-col items-center">
-                        <span class="text-teal-500">Admin</span>
-                        <span class="text-teal-500 font-semibold">Natan Hutahean</span>
+                        <span class="text-teal-500">Welcome, Admin</span>
+                        <span class="text-teal-500 font-semibold">Kelompok 06</span>
                     </div>
                     <img alt="Profile picture of Natan Hutahean" class="rounded-full ml-4" height="40"
                         src="https://storage.googleapis.com/a1aa/image/sG3g-w8cayIo0nXWyycQx8dmzPb0_0-Zc6iv6Fls36s.jpg"

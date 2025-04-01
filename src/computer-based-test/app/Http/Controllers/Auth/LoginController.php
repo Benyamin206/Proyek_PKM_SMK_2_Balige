@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Auth\LoginRequest; 
 
 class LoginController extends Controller
 {
@@ -23,13 +24,28 @@ class LoginController extends Controller
      */
     public function login(LoginRequest $request)
     {
-        $request->authenticate();
+        $request->authenticate(); // Memanggil metode authenticate dari LoginRequest
     
-        // Jika login berhasil, redirect berdasarkan role
+        // Jika sampai sini, berarti pengguna sudah berhasil login
         $user = Auth::user();
+    
+        // Periksa apakah pengguna adalah operator dan statusnya tidak aktif
+        if ($user->hasRole('Operator')) {
+            $operator = $user->operator; // Mengambil data operator terkait
+    
+            if ($operator && $operator->status_aktif === 'tidak aktif') {
+                // Jika status operator tidak aktif, logout dan tampilkan pesan kesalahan
+                Auth::logout();
+                throw ValidationException::withMessages([
+                    'email' => ['Akun Anda tidak aktif. Silakan hubungi administrator.'],
+                ]);
+            }
+        }
+    
+        // Regenerasi session untuk keamanan
         $request->session()->regenerate();
     
-        // Redirect berdasarkan role
+        // Redirect berdasarkan peran pengguna
         if ($user->hasRole('Admin')) {
             return redirect()->intended('Role.Admin.Akun.index');
         } elseif ($user->hasRole('Guru')) {
@@ -39,8 +55,6 @@ class LoginController extends Controller
         } elseif ($user->hasRole('Siswa')) {
             return redirect()->intended('Role.Siswa.Course.index');
         }
-    
-        return redirect()->intended('/dashboard');
     }
 
     /**

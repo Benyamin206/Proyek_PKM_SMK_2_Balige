@@ -110,4 +110,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Siswa::class);
     }
+
+    public function operator()
+    {
+        return $this->hasOne(Operator::class, 'user_id', 'id'); 
+    }
 }
