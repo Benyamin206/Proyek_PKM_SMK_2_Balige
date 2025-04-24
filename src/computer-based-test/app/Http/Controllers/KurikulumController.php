@@ -3,83 +3,91 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kurikulum;
+use App\Models\Operator;
 use Illuminate\Http\Request;
 
 class KurikulumController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $kurikulums = Kurikulum::with('user')->get(); // Mengambil semua data kurikulum dari database
-        return view('Role.Operator.Kurikulum.index', compact('kurikulums'));
+        $kurikulums = Kurikulum::all();
+        $kurikulums = Kurikulum::with('operator')->get();
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        return view('Role.Operator.Kurikulum.index', compact('kurikulums', 'user'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        return view('Role.Operator.Kurikulum.create');
+        $operators = Operator::all();
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        return view('Role.Operator.Kurikulum.create', compact('operators','user'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
-            'nama_kurikulum' => 'required|string|max:255|unique:kurikulums',
-            'user_id' => 'required|exists:users,id',
+            'nama_kurikulum' => 'required|string|max:255|unique:kurikulum',
         ]);
 
-        Kurikulum::create($request->only(['nama_kurikulum', 'user_id'])); // Simpan kurikulum ke database
-
+            $idUser   = auth()->user()->id;
+            $operator = Operator::where('id_user', $idUser )->first();
+    
+        Kurikulum::create([
+            'nama_kurikulum' => $request->nama_kurikulum,
+            'id_operator' => $operator->id_operator,
+        ]);
+    
         return redirect()->route('Operator.Kurikulum.index')->with('success', 'Kurikulum berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $kurikulum = Kurikulum::with('user')->findOrFail($id); // Mengambil data kurikulum berdasarkan ID
-        return view('Role.Operator.Kurikulum.show', compact('kurikulum'));
+        $kurikulum = Kurikulum::with('operator')->findOrFail($id);
+        $operator = Operator::all();
+        return view('Role.Operator.Kurikulum.index', compact('kurikulum','operator'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        $kurikulum = Kurikulum::findOrFail($id); // Mengambil data kurikulum berdasarkan ID
-        return view('Role.Operator.Kurikulum.edit', compact('kurikulum'));
+        $kurikulum = Kurikulum::findOrFail($id);
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        return view('Role.Operator.Kurikulum.edit', compact('kurikulum', 'user'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'nama_kurikulum' => 'required|string|max:255|unique:kurikulums,nama_kurikulum,' . $id,
-            'user_id' => 'required|exists:users,id',
+            'nama_kurikulum' => 'required|string|max:255|unique:kurikulum,nama_kurikulum,' . $id . ',id_kurikulum',
         ]);
 
-        $kurikulum = Kurikulum::findOrFail($id); // Mengambil data kurikulum berdasarkan ID
-        $kurikulum->update($request->only(['nama_kurikulum', 'user_id'])); // Update kurikulum di database
+        $id_operator = auth()->user()->id_operator;
 
+        $idUser   = auth()->user()->id;
+        $operator = Operator::where('id_user', $idUser )->first();
+
+        $kurikulum = Kurikulum::findOrFail($id);
+
+        $kurikulum->update([
+            'nama_kurikulum' => $request->nama_kurikulum,
+            'id_operator' => $operator->id_operator,
+        ]);
+    
         return redirect()->route('Operator.Kurikulum.index')->with('success', 'Kurikulum berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        $kurikulum = Kurikulum::findOrFail($id); // Mengambil data kurikulum berdasarkan ID
-        $kurikulum->delete(); // Menghapus kurikulum
+        $kurikulum = Kurikulum::findOrFail($id);
+        $kurikulum->delete();
 
         return redirect()->route('Operator.Kurikulum.index')->with('success', 'Kurikulum berhasil dihapus.');
     }

@@ -4,7 +4,7 @@ namespace App\Imports;
 
 use App\Models\Guru;
 use App\Models\User;
-use App\Models\Siswa;
+use App\Models\Operator;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithStartRow;
@@ -18,54 +18,46 @@ class GuruImport implements ToModel, WithStartRow, WithValidation
         return 2;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
     public function model(array $row)
     {
-        if (Siswa::where('nis', $row[1])->exists()) {
-            throw new \Exception("NIS {$row[1]} sudah ada di tabel siswa.");
-        }
-    
         if (Guru::where('nip', $row[1])->exists()) {
             throw new \Exception("NIP {$row[1]} sudah ada di tabel guru.");
         }
-    
-        // Cari atau buat role "guru"
+
         $guruRole = Role::where('name', 'guru')->first();
-    
+
         if (!$guruRole) {
             throw new \Exception('Role "guru" tidak ditemukan.');
         }
-    
-        // Buat pengguna (User )
+
         $user = User::create([
-            'name' => $row[0], // Nama guru
-            'email' => $row[1], // NIP sebagai email
-            'password' => Hash::make($row[2]), // Password
+            'name' => $row[0],
+            'email' => $row[2],
+            'password' => Hash::make($row[3]),
         ]);
-    
-        // Assign role "guru" ke pengguna
-        $user->assignRole($guruRole);
-    
-        // Buat guru (Guru) dan hubungkan dengan pengguna
-        $guru = Guru::create([
-            'name' => $row[0], // Nama guru
-            'nip' => $row[1], // NIP
-            'password' => Hash::make($row[2]), // Password
-            'user_id' => $user->id, 
+
+        $user->assignRole('Guru');
+
+        $operator = Operator::where('id_user', auth()->user()->id)->first();
+
+        Guru::create([
+            'nama_guru' => $row[0],
+            'nip' => $row[1],
+            'id_user' => $user->id,
+            'id_operator' => $operator->id_operator,
+            'status' => 'Aktif',
         ]);
-    
-        return $guru;
+
+        return null;
     }
+
     public function rules(): array
     {
         return [
-            '0' => 'required|string', // Nama guru
-            '1' => 'required|numeric|unique:gurus,nip', // NIP (harus unik)
-            '2' => 'required|string', // Password
+            '0' => 'required|string',
+            '1' => 'required|numeric|unique:gurus,nip',
+            '2' => 'required|email|unique:users,email',
+            '3' => 'required|string',
         ];
     }
 }

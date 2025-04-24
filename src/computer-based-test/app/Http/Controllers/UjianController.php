@@ -3,46 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ujian;
+use App\Models\Kursus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 
 class UjianController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $ujians = Ujian::with(['course', 'user'])->orderBy('id', 'DESC')->get();
-        return view('Role.Guru.Course.Ujian.index', compact('ujians'));
-    }
+public function index()
+{
+    $ujians = Ujian::with(['kursus', 'guru'])->orderBy('id_ujian', 'DESC')->get();
+    return view('Role.Guru.Course.Course', compact('ujians'));
+}
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('Role.Guru.Course.Ujian.create');
-    }
+public function create()
+{
+    return view('Role.Guru.Course.AddQuestion');
+}
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'Password' => 'required|string|min:8',
+            'nama_ujian' => 'required|string|max:255',
+            'acak' => 'required|in:Aktif,Tidak Aktif',
+            'status_jawaban' => 'required|in:Aktif,Tidak Aktif',
+            'grade' => 'required|numeric',
             'Waktu_Mulai' => 'required|date',
             'Waktu_Selesai' => 'required|date|after:Waktu_Mulai',
             'Waktu_Lihat' => 'nullable|date',
-            'Nilai' => 'required|integer',
             'Image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'course_id' => 'required|exists:courses,id',
-            'user_id' => 'required|exists:users,id',
+            'id_kursus' => 'required|exists:kursuses,id_kursus',
+            'id_guru' => 'required|exists:gurus,id_guru',
+            'id_tipe_ujian' => 'required|exists:tipe_ujians,id_tipe_ujian',
         ]);
-        $validated['Password'] = Hash::make($validated['Password']);
 
         if ($request->hasFile('Image')) {
             $validated['Image'] = $request->file('Image')->store('images/ujians', 'public');
@@ -53,44 +45,34 @@ class UjianController extends Controller
         return redirect()->route('Guru.Ujian.index')->with('success', 'Ujian created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Ujian $ujian)
     {
-        return view('Role.Guru.Course.Ujian.index', compact('ujian'));
+        $course = $ujian->kursus;
+        return view('Role.Guru.Course.Ujian.index', compact('ujian', 'course'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Ujian $ujian)
     {
         return view('Role.Guru.Course.Ujian.edit', compact('ujian'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Ujian $ujian)
     {
         $validated = $request->validate([
-            'Password' => 'nullable|string|min:8',
+            'nama_ujian' => 'nullable|string|max:255',
+            'acak' => 'nullable|in:Aktif,Tidak Aktif',
+            'status_jawaban' => 'nullable|in:Aktif,Tidak Aktif',
+            'grade' => 'nullable|numeric',
             'Waktu_Mulai' => 'required|date',
             'Waktu_Selesai' => 'required|date|after:Waktu_Mulai',
             'Waktu_Lihat' => 'nullable|date',
-            'Nilai' => 'required|integer',
             'Image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'course_id' => 'required|exists:courses,id',
-            'user_id' => 'required|exists:users,id',
+            'id_kursus' => 'required|exists:kursuses,id_kursus',
+            'id_guru' => 'required|exists:gurus,id_guru',
+            'id_tipe_ujian' => 'required|exists:tipe_ujians,id_tipe_ujian',
         ]);
-        if ($request->filled('Password')) {
-            $validated['Password'] = Hash::make($validated['Password']);
-        } else {
-            unset($validated['Password']);
-        }
+
         if ($request->hasFile('Image')) {
-            // Delete the old image if it exists
             if ($ujian->Image) {
                 Storage::disk('public')->delete($ujian->Image);
             }
@@ -102,12 +84,8 @@ class UjianController extends Controller
         return redirect()->route('Guru.Ujian.index')->with('success', 'Ujian updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Ujian $ujian)
     {
-        // Delete the associated image if it exists
         if ($ujian->Image) {
             Storage::disk('public')->delete($ujian->Image);
         }

@@ -4,18 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use App\Models\User;
+use App\Models\Operator;
 use App\Imports\GuruImport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
 
 class GuruController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $gurus = Guru::with('user')->get(); // Mengambil semua guru beserta relasi user
+        $gurus = Guru::with('user')->get();
         $user = auth()->user();
         if (!$user) {
             return redirect()->route('login');
@@ -23,17 +22,11 @@ class GuruController extends Controller
         return view('Role.Operator.Guru.index', compact('gurus', 'user'));
     }
 
-    /**
-     * Show the form for uploading Excel file.
-     */
     public function upload()
     {
-        return view('Role.Operator.Guru.upload'); // Pastikan ada view untuk upload
+        return view('Role.Operator.Guru.index');
     }
 
-    /**
-     * Handle the Excel file upload.
-     */
     public function import(Request $request)
     {
         $request->validate([
@@ -42,9 +35,7 @@ class GuruController extends Controller
     
         if ($request->hasFile('file') && $request->file('file')->isValid()) {
             try {
-                // Menggunakan Maatwebsite Excel untuk membaca file
                 Excel::import(new GuruImport, $request->file('file'));
-
                 return redirect()->route('Operator.Guru.index')->with('success', 'Data guru berhasil diupload.');
             } catch (\Exception $e) {
                 \Log::error('Error during import: ' . $e->getMessage());
@@ -55,93 +46,103 @@ class GuruController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        return view('Role.Operator.Guru.create');
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        return view('Role.Operator.Guru.create',compact('user'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'nip' => 'required|string|max:255|unique:gurus',
-            'password' => 'required|string|min:6',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'nip' => 'required|string|max:255|unique:gurus',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:6',
+                'status' => 'in:Aktif,Tidak Aktif',
+            ]);
+    
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+            ]);
 
-        // Buat pengguna (User )
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->nip, // Menggunakan NIP sebagai email
-            'password' => bcrypt($request->password),
-        ]);
+            $user->assignRole('Guru');
+    
+            $idUser   = auth()->user()->id;
+            $operator = Operator::where('id_user', $idUser )->first();
+    
+            if (!$operator) {
+                Log::error('Operator not found for user: ' . $idUser );
+                return redirect()->back()->withErrors('ID Operator tidak ditemukan. Pastikan pengguna memiliki ID Operator yang valid.');
+            }
+    
+            Guru::create([
+                'nama_guru' => $request->name,
+                'nip' => $request->nip,
+                'id_user' => $user->id,
+                'id_operator' => $operator->id_operator,
+                'status' => $request->status ?? 'Aktif',
+            ]);
 
-        // Buat guru (Guru) dan hubungkan dengan pengguna
-        Guru::create([
-            'name' => $request->name,
-            'nip' => $request->nip,
-            'user_id' => $user->id,
-            'password' => bcrypt($request->password), // Simpan password yang sudah di-hash
-        ]);
-
-        return redirect()->route('Operator.Guru.index')->with('success', 'Guru berhasil ditambahkan.');
+    
+            return redirect()->route('Operator.Guru.index')->with('success', 'Guru berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            Log::error('Error adding guru: ' . $e->getMessage(), [
+                'request' => $request->all(),
+                'user_id' => auth()->user()->id,
+            ]);
+            return redirect()->back()->withErrors('Terjadi kesalahan saat menambahkan guru.');
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $guru = Guru::with('user')->findOrFail($id); // Mengambil guru beserta relasi user
-        return view('Role.Operator.Guru.show', compact('guru')); 
+        $guru = Guru::with('user')->findOrFail($id);
+        return view('Role.Operator.Guru.index', compact('guru'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        $guru = Guru::with('user')->findOrFail($id); // Mengambil guru beserta relasi user
+        $guru = Guru::with('user')->findOrFail($id);
         $user = auth()->user();
         return view('Role.Operator.Guru.edit', compact('guru', 'user'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'nip' => 'required|string|max:255|unique:gurus,nip,' . $id,
             'password' => 'nullable|string|min:6',
+            'status' => 'required|in:Aktif,Tidak Aktif',
         ]);
 
         $guru = Guru::findOrFail($id);
-        $guru->name = $request->name;
+        $guru->nama_guru = $request->name;
         $guru->nip = $request->nip;
+        $guru->nip = $request->status;
 
         if ($request->filled('password')) {
             $guru->password = bcrypt($request->password);
         }
 
-        $guru->save(); // Simpan perubahan
+        $guru->save();
 
         return redirect()->route('Operator.Guru.index')->with('success', 'Guru berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $guru = Guru::findOrFail($id);
-        $guru->delete(); // Menghapus guru dari database
+        $guru->delete();
         return redirect()->route('Operator.Guru.index')->with('success', 'Guru berhasil dihapus.');
     }
 }

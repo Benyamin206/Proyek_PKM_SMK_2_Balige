@@ -2,26 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Kelas extends Model
+class kelas extends Model
 {
-    use HasFactory, SoftDeletes;
 
-    protected $guarded = [
-        'id',
-    ];
+    protected $table = 'kelas'; 
+
+    protected $primaryKey = 'id_kelas';
 
     protected $fillable = [
+        'id_kelas',
         'nama_kelas',
-        'user_id',
+        'id_operator',
     ];
 
-    // Relasi dengan model User (Operator)
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
+    public function operator(){
+        return $this->belongsTo(operator::class);
+    }
+
+    public function siswa(){
+        return $this->hasMany(siswa::class);
     }
 }

@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Operator; 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Log;
 
 class OperatorController extends Controller
 {
@@ -18,112 +18,119 @@ class OperatorController extends Controller
         return view('Role.Admin.Akun.index', compact('operators', 'users'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $role = Role::where('name', 'Operator')->first();
         return view('Role.Admin.Akun.create', compact('role'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
+        Log::info('Store method called.');
+    
         $request->validate([
             'nama_sekolah' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'durasi' => 'integer',
+            'durasi' => 'required|integer|min:1',
         ]);
-        
+    
+        Log::info('Validation passed.', $request->all());
+    
         try {
-            // Create user first
             $user = User::create([
                 'name' => $request->nama_sekolah,
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
             ]);
     
-            // Assign role to the user
-            $user->assignRole('Operator');
+            Log::info('User created.', ['id_user' => $user->id]);
     
-            // Create operator with the user_id
+            $user->assignRole('Operator');
+            Log::info('Role assigned to user.', ['user_id' => $user->id]);
+    
             $operator = Operator::create([
                 'nama_sekolah' => $request->nama_sekolah,
-                'email' => $request->email,
-                'password' => bcrypt($request->password), // Store password if needed
-                'durasi' => $request->durasi ?? 12,
-                'user_id' => $user->id, // Use the newly created user's ID
+                'durasi' => $request->durasi ?? 12, 
+                'status' => 'Aktif',
+                'id_user' => $user->id,
             ]);
+    
+            Log::info('Operator created.', ['operator_id' => $operator->id_operator]);
     
             return redirect()->route('Admin.Akun.index')->with('success', 'Akun operator berhasil dibuat.');
         } catch (\Exception $e) {
             Log::error('Error creating operator: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Failed to create operator.']);
+            return back()->withErrors(['error' => 'Gagal membuat akun operator.']);
         }
     }
-    
-    
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $operator = Operator::findOrFail($id);
-        return view('Role.Admin.Akun.index', compact('operator'));
+        return view('Role.Admin.Akun.show', compact('operator'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit($user)
     {
-        $operators = Operator::findOrFail($id);
-        $users = auth()->user();
+        try {
+            $operator = Operator::where('id_user', $user)->firstOrFail();
+            $user = User::findOrFail($operator->id_user);
     
-        return view('Role.Admin.Akun.edit', compact('operators', 'users'));
+            return view('Role.Admin.Akun.edit', compact('operator', 'user'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('Admin.Akun.index')->withErrors('Operator not found.');
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id_operator)
     {
-        Log::info("Updating operator with ID: {$id}");
-        
-        $request->validate([
-            'nama_sekolah' => 'nullable|string|max:255',
-            'email' => 'nullable|string|email|max:255|unique:operators,email,' . $id,
-            'password' => 'nullable|string|min:8|confirmed',
-            'status_aktif' => 'in:aktif,tidak aktif',
-        ]);
-        
-        $operator = Operator::findOrFail($id);
+        Log::info("Update method called for operator with ID: {$id_operator}");
+    
+        try {
+            $operator = Operator::findOrFail($id_operator);
+            Log::info("Operator found", ['operator_id' => $operator->id_operator]);
 
-        $operator->update([
-            'nama_sekolah' => $request->filled('nama_sekolah') ? $request->nama_sekolah : $operator->nama_sekolah,
-            'email' => $request->filled('email') ? $request->email : $operator->email,
-            'password' => $request->filled('password') ? bcrypt($request->password) : $operator->password,
-            'status_aktif' => $request->filled('status_aktif') ? $request->status_aktif : $operator->status_aktif,
-        ]);
+            $request->validate([
+                'nama_sekolah' => 'nullable|string|max:255',
+                'email' => 'nullable|string|email|max:255|unique:users,email,' . $operator->id_user,
+                'password' => 'nullable|string|min:8|confirmed',
+                'status' => 'in:Aktif,Tidak Aktif',
+            ]);
 
-        $user = User::findOrFail($operator->user_id); 
-        $user->update([
-            'name' => $request->filled('nama_sekolah') ? $request->nama_sekolah : $user->name,
-            'email' => $request->filled('email') ? $request->email : $user->email,
-            'password' => $request->filled('password') ? bcrypt($request->password) : $user->password,
-        ]);
-        
-        return redirect()->route('Admin.Akun.index')->with('success', 'Akun operator berhasil diperbarui.');
+            Log::info("Validation passed", $request->all());
+
+            $operator->update([
+                'nama_sekolah' => $request->filled('nama_sekolah') ? $request->nama_sekolah : $operator->nama_sekolah,
+                'status' => $request->filled('status') ? $request->status : $operator->status,
+            ]);
+
+            Log::info("Operator updated", ['operator_id' => $operator->id_operator]);
+            $user = User::findOrFail($operator->id_user);
+
+            Log::info("User found", ['user_id' => $user->id]);
+    
+            $userData = [
+                'name' => $request->filled('nama_sekolah') ? $request->nama_sekolah : $user->name,
+                'email' => $request->filled('email') ? $request->email : $user->email,
+            ];
+            if ($request->filled('password')) {
+                $userData['password'] = bcrypt($request->password);
+            }
+    
+            $user->update($userData);
+            Log::info("User updated", ['user_id' => $user->id]);
+    
+            return redirect()->route('Admin.Akun.index')->with('success', 'Akun operator berhasil diperbarui.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error("Operator or User not found: " . $e->getMessage());
+            return back()->withErrors(['error' => 'Operator atau pengguna tidak ditemukan.']);
+        } catch (\Exception $e) {
+            Log::error("Error updating operator: " . $e->getMessage());
+            return back()->withErrors(['error' => 'Gagal memperbarui operator.']);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $operator = Operator::findOrFail($id);

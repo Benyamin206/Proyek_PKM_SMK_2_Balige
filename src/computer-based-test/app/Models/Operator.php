@@ -3,32 +3,45 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Operator extends Model
 {
-    use HasFactory;
+   
+    protected $table = 'operator'; 
 
-    protected $guarded = ['id'];
+    protected $primaryKey = 'id_operator';
 
     protected $fillable = [
+        'id_operator',
         'nama_sekolah',
-        'email',
-        'password',
-        'status_aktif',
         'durasi',
-        'user_id',
+        'status',
+        'id_user',
     ];
-    
+
+
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id', 'id'); 
+        return $this->belongsTo(User::class, 'id_user');
     }
 
-    public static $rules = [
-        'status_aktif' => 'in:aktif,tidak aktif',
-    ];
+    public function kurikulum(){
+        return $this->hasMany(kurikulum::class);
+    }
 
+    public function guru(){
+        return $this->hasMany(guru::class);
+    }
 
+    public function kelas(){
+        return $this->hasMany(kelas::class);
+    }
+
+    public function mata_pelajaran(){
+        return $this->hasMany(mata_pelajaran::class);
+    }
+
+    public function siswa(){
+        return $this->hasMany(siswa::class);
+    }
 }

@@ -79,16 +79,11 @@
         </div>
         <!-- Main Content -->
         <div class="w-full md:w-3/4 p-8">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                <form id="importForm" action="{{ route('Operator.Guru.import') }}" method="POST"
-                    enctype="multipart/form-data" class="flex justify-end mb-4">
-                    @csrf
-                    <input type="file" id="fileInput" name="file" class="hidden" accept=".xlsx, .xls" />
-                    <button type="button" id="importButton"
-                        class="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center">
-                        <i class="fas fa-upload mr-2"></i> Import File
-                    </button>
-                </form>
+            <div class="flex justify-end mb-4">
+                <a href="{{ route('Operator.Guru.create') }}"
+                    class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Tambahkan
+                </a>
             </div>
             <div class="bg-white p-4 md:p-6 rounded-lg shadow-md">
                 <h2 class="text-xl font-bold mb-4">Teacher Information</h2>
@@ -97,13 +92,14 @@
                         <div
                             class="bg-gray-300 p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
                             <div class="mb-4 md:mb-0">
-                                <h4 class="text-lg font-semibold text-gray-700">{{ $teacher->name }}</h4>
-                                <h5 class="text-sm text-gray-500">NIP: <span
-                                        class="text-gray-700">{{ $teacher->nip }}</span></h5>
-                            </div>
+                                <h2 class="text-xl font-semibold text-black mb-2">{{ $teacher->nama_guru }}</h2>
+                                <p class="text-base text-gray-700">NIP: <span class="text-black text-lg">{{ $teacher->nip }}</span></p>
+                                <p class="text-base text-gray-700">Email: <span class="text-black text-lg">{{ $teacher->user->email }}</span></p>
+                                <p class="text-base text-gray-700">Status Akun: <span class="text-black text-lg">{{ $teacher->status }}</span></p>
+                            </div>                            
                             <div class="flex space-x-5">
                                 <div>
-                                    <form action="{{ route('Operator.Guru.destroy', $teacher->id) }}" method="POST"
+                                    <form action="{{ route('Operator.Guru.destroy', $teacher->id_guru) }}" method="POST"
                                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun ini?');">
                                         @csrf
                                         @method('DELETE')
@@ -113,7 +109,7 @@
                                     </form>
                                 </div>
                                 <div>
-                                    <form action="{{ route('Operator.Guru.edit', $teacher->id) }}" method="GET">
+                                    <form action="{{ route('Operator.Guru.edit', $teacher->id_guru) }}" method="GET">
                                         <button type="submit" class="text-blue-500 flex items-center">
                                             <i class="fas fa-edit mr-1"></i> EDIT
                                         </button>

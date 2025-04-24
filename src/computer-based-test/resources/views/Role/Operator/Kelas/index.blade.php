@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
-        /* Custom dropdown styles */
         .dropdown:hover .dropdown-menu {
             display: block;
         }
@@ -17,7 +16,7 @@
 <body class="bg-gray-100">
     <!-- Header -->
     <div class="bg-white shadow p-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-teal-500">Kelas</h1>
+        <h1 class="text-2xl font-bold text-teal-500">QUIZHUB</h1>
         <div class="relative dropdown">
             <div class="flex items-center cursor-pointer">
                 <div class="flex flex-col items-center">
@@ -89,7 +88,7 @@
                 @foreach ($kelas as $kelases)
                     <div class="bg-gray-300 p-4 rounded flex justify-between items-center">
                         <h4 class="text-lg text-gray-700">{{ $kelases->nama_kelas }}</h4>
-                        <a href="{{ route('Operator.Kelas.edit', $kelases->id) }}"
+                        <a href="{{ route('Operator.Kelas.edit', $kelases->id_kelas) }}"
                             class="text-gray-500 flex items-center">
                             <i class="fas fa-pen mr-1"></i> EDIT
                         </a>

@@ -53,66 +53,15 @@ class User extends Authenticatable
     /**
      * Get the courses associated with the user.
      */
-    public function courses()
-    {
-        return $this->hasMany(Course::class, 'user_id', 'id');
+    public function guru(){
+        return $this->hasOne(guru::class, 'id_user');
     }
-
-    /**
-     * Get the quizzes associated with the user.
-     */
-    public function quizzes()
-    {
-        return $this->hasMany(Quiz::class, 'user_id', 'id');
+    
+    public function operator(){
+        return $this->hasOne(operator::class, 'id_user');
     }
-
-    /**
-     * Get the ujians associated with the user.
-     */
-    public function ujians()
-    {
-        return $this->hasMany(Ujian::class, 'user_id', 'id');
-    }
-
-    /**
-     * Get the latihan soals associated with the user.
-     */
-    public function latihanSoals()
-    {
-        return $this->hasMany(LatihanSoal::class, 'user_id', 'id');
-    }
-
-    /**
-     * Get the quiz soals associated with the user.
-     */
-    public function quizSoals()
-    {
-        return $this->hasMany(QuizSoal::class, 'user_id', 'id');
-    }
-
-    /**
-     * Get the password reset tokens associated with the user.
-     */
-    public function passwordResetTokens()
-    {
-        return $this->hasOne(PasswordResetToken::class, 'email', 'email');
-    }
-
-    /**
-     * Get the sessions associated with the user.
-     */
-    public function sessions()
-    {
-        return $this->hasMany(Session::class, 'user_id', 'id');
-    }
-
-    public function siswa()
-    {
-        return $this->hasOne(Siswa::class);
-    }
-
-    public function operator()
-    {
-        return $this->hasOne(Operator::class, 'user_id', 'id'); 
+    
+    public function siswa(){
+        return $this->hasOne(siswa::class, 'id_user');
     }
 }

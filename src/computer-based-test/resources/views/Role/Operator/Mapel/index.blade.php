@@ -7,12 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+    <style>
         /* Custom dropdown styles */
         .dropdown:hover .dropdown-menu {
             display: block;
         }
     </style>
 </head>
+
 <body class="bg-gray-100">
     <!-- Header -->
     <div class="bg-white shadow p-4 flex justify-between items-center">
@@ -86,26 +88,50 @@
             <div class="bg-white p-4 md:p-6 rounded-lg shadow-md">
                 <h1 class="text-lg font-bold mb-4">Subject Information</h1>
                 <div class="space-y-4">
-                    @foreach ($mataPelajarans as $mapel)
-                        <div
-                            class="bg-gray-300 p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
-                            <div class="bg-gray-300 p-4 rounded flex justify-between items-center">
+                    <div class="mb-4">
+                        <label for="kurikulum" class="block text-sm font-medium text-gray-700">Pilih Kurikulum</label>
+                        <select id="kurikulum" name="kurikulum"
+                            class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                            <option value="">Semua Kurikulum</option>
+                            @foreach ($kurikulums as $kurikulum)
+                                <option value="{{ $kurikulum->id_kurikulum }}">{{ $kurikulum->nama_kurikulum }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div id="mapel-list">
+                        @foreach ($mataPelajarans as $mapel)
+                            <div class="bg-gray-300 p-4 rounded flex justify-between items-center mb-4 mapel-item"
+                                data-kurikulum="{{ $mapel->id_kurikulum }}">
                                 <span class="text-lg text-gray-700">{{ $mapel->nama_mata_pelajaran }}</span>
-                                <a href="{{ route('Operator.MataPelajaran.edit', $mapel->id) }}"
+                                <a href="{{ route('Operator.MataPelajaran.edit', $mapel->id_mata_pelajaran) }}"
                                     class="text-gray-500 flex items-center">
                                     <i class="fas fa-pen mr-1"></i> EDIT
                                 </a>
                             </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <script>
-        document.querySelector('.dropdown').addEventListener('click', function() {
-            this.querySelector('.dropdown-menu').classList.toggle('hidden');
-        });
-    </script>
+        <script>
+            document.getElementById('kurikulum').addEventListener('change', function() {
+                const selectedKurikulum = this.value;
+                const mapelItems = document.querySelectorAll('.mapel-item');
+
+                mapelItems.forEach(item => {
+                    const itemKurikulum = item.getAttribute('data-kurikulum');
+                    if (selectedKurikulum === '' || itemKurikulum === selectedKurikulum) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            document.querySelector('.dropdown').addEventListener('click', function() {
+                this.querySelector('.dropdown-menu').classList.toggle('hidden');
+            });
+        </script>
 </body>
 
 </html>

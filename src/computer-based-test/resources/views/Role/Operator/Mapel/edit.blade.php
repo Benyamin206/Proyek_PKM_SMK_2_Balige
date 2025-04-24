@@ -22,7 +22,7 @@
 <body class="bg-gray-100">
     <!-- Header -->
     <div class="bg-white shadow p-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-teal-500">QUIZHUB</h1>
+        <h1 class="text-2xl font-bold text-teal-500">Kelas</h1>
         <div class="relative dropdown">
             <div class="flex items-center cursor-pointer">
                 <div class="flex flex-col items-center">
@@ -41,6 +41,7 @@
                 </form>
             </div>
         </div>
+    </div>
         <div class="flex flex-col md:flex-row">
             <!-- Sidebar -->
             < class="w-full md:w-1/4 bg-gray-200 h-screen p-4">
@@ -106,7 +107,6 @@
         </div>
     </div>
     <script>
-        // Toggle dropdown menu
         document.querySelector('.dropdown').addEventListener('click', function() {
             this.querySelector('.dropdown-menu').classList.toggle('hidden');
         });

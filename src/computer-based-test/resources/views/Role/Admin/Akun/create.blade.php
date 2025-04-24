@@ -65,7 +65,7 @@
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Konfirmasi Password<span class="text-red-500">*</span></label>
-                        <input type="password" name="password_confirmation" class="w-full border border-gray-400 p-2 rounded-lg">
+                        <input type="password" name="password_confirmation" class="w-full border border-gray-400 p-2 rounded-lg" required>
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Durasi<span class="text-red-500">*</span></label>

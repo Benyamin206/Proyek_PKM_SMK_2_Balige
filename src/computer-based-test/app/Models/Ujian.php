@@ -2,28 +2,39 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Ujian extends Model
+class ujian extends Model
 {
-    use HasFactory, SoftDeletes;
 
-    protected $guarded = ['id'];
+    protected $table = 'ujian'; 
 
-    public function course()
-    {
-        return $this->belongsTo(Course::class);
+    protected $primaryKey = 'id_ujian';
+
+    protected $fillable = [
+        'id_ujian',
+        'nama_ujian',
+        'acak',
+        'status_jawaban',
+        'grade',
+        'id_kursus',
+        'id_guru',
+        'id_tipe_ujian',
+    ];
+
+    public function kursus(){
+        return $this->belongsTo(kursus::class, 'id_kursus', 'id_kursus');
     }
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
+    public function guru(){
+        return $this->belongsTo(guru::class, 'id_guru');
     }
 
-    public function nilai()
-    {
-        return $this->hasMany(Nilai::class);
+    public function tipe_ujian(){
+        return $this->belongsTo(tipe_ujian::class, 'id_tipe_ujian');
+    }
+
+    public function soal(){
+        return $this->hasMany(soal::class);
     }
 }

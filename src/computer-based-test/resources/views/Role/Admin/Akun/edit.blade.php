@@ -51,26 +51,26 @@
             </div>
             <!-- Main Content -->
             <div class="w-full lg:w-3/4 p-8">
-                <form action="{{ route('Admin.Akun.update', $operators->id) }}" method="POST" class="space-y-6">
+                <form action="{{ route('Admin.Akun.update', $operator->id_operator) }}" method="POST" class="space-y-6">
                     @csrf
                     @method('PUT')
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Nama Sekolah<span
                                 class="text-red-500">*</span></label>
                         <input type="text" name="nama_sekolah" class="w-full border border-gray-400 p-2 rounded-lg"
-                            value="{{ $operators['nama_sekolah'] }}" required>
+                            value="{{ $operator['nama_sekolah']}}" required>
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Email<span
                                 class="text-red-500">*</span></label>
                         <input type="email" name="email" class="w-full border border-gray-400 p-2 rounded-lg"
-                            value="{{ $operators['email'] }}" required>
+                            value="{{ $operator->user['email'] }}" required>
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Status Aktif<span class="text-red-500">*</span></label>
-                        <select name="status_aktif" class="w-full border border-gray-400 p-2 rounded-lg">
-                            <option value="aktif" {{ $operators->status_aktif == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                            <option value="tidak aktif" {{ $operators->status_aktif == 'tidak aktif' ? 'selected' : '' }}>Tidak Aktif</option>
+                        <select name="status" class="w-full border border-gray-400 p-2 rounded-lg">
+                            <option value="Aktif" {{ $operator->status == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                            <option value="Tidak Aktif" {{ $operator->status == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif</option>
                         </select>
                     </div>
                     <div>

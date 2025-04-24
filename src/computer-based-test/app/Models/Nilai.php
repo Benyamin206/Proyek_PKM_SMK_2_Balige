@@ -9,6 +9,10 @@ class Nilai extends Model
 {
     use HasFactory;
 
+    protected $table = 'nilai'; 
+
+    protected $primaryKey = 'id_nilai';
+
     protected $guarded = ['id'];
 
     public function user()

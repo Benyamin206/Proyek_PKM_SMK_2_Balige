@@ -22,7 +22,7 @@
 <body class="bg-gray-100">
     <!-- Header -->
     <div class="bg-white shadow p-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-teal-500">QUIZHUB</h1>
+        <h1 class="text-2xl font-bold text-teal-500">Kelas</h1>
         <div class="relative dropdown">
             <div class="flex items-center cursor-pointer">
                 <div class="flex flex-col items-center">
@@ -86,7 +86,7 @@
         <div class="w-full md:w-4/5 p-4 flex justify-center items-start">
             <div class="flex-1 p-4">
                 <div class="space-y-4">
-                    <form action="{{ route('Operator.Kelas.update', $kelas->id) }}" method="POST" class="space-y-6">
+                    <form action="{{ route('Operator.Kelas.update', $kelas->id_kelas) }}" method="POST" class="space-y-6">
                         @csrf
                         @method('PATCH')
                         <div>

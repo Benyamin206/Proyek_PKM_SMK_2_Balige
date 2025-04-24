@@ -74,24 +74,21 @@
         <!-- Main Content -->
         <div class="flex-1 p-4">
             <div class="flex justify-end mb-4">
-                <button class="bg-green-600 text-white px-4 py-2 rounded flex items-center">
+                <a href="{{ route('Operator.Kurikulum.create') }}"
+                    class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center">
                     <i class="fas fa-plus mr-2"></i> Tambahkan
-                </button>
+                </a>
             </div>
             <h1 class="text-lg font-bold mb-4">Kurikulum Information</h1>
             <div class="space-y-4">
-                <div class="bg-gray-300 p-4 rounded flex justify-between items-center">
-                    <span class="text-lg text-gray-700">Kurikulum KTSP</span>
-                    <a href="#" class="text-gray-500 flex items-center">
-                        <i class="fas fa-pen mr-1"></i> EDIT
-                    </a>
-                </div>
-                <div class="bg-gray-300 p-4 rounded flex justify-between items-center">
-                    <span class="text-lg text-gray-700">Kurikulum Merdeka</span>
-                    <a href="#" class="text-gray-500 flex items-center">
-                        <i class="fas fa-pen mr-1"></i> EDIT
-                    </a>
-                </div>
+                @foreach($kurikulums as $kurikulum)
+                    <div class="bg-gray-300 p-4 rounded flex justify-between items-center">
+                        <span class="text-lg text-gray-700">{{ $kurikulum->nama_kurikulum }}</span>
+                        <a href="{{ route('Operator.Kurikulum.edit', $kurikulum->id_kurikulum) }}" class="text-gray-500 flex items-center">
+                            <i class="fas fa-pen mr-1"></i> EDIT
+                        </a>
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>

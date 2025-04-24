@@ -16,7 +16,7 @@
     <body class="bg-gray-100">
         <!-- Header -->
         <div class="bg-white shadow p-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-teal-500">QUIZHUB</h1>
+            <h1 class="text-2xl font-bold text-teal-500">Kelas</h1>
             <div class="relative dropdown">
                 <div class="flex items-center cursor-pointer">
                     <div class="flex flex-col items-center">
@@ -76,30 +76,38 @@
                 </ul>
             </div>
             <div class="w-full md:w-3/4 p-8">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                        <form id="importForm" action="{{ route('Operator.Siswa.import') }}" method="POST"
-                            enctype="multipart/form-data" class="flex justify-end mb-4">
-                            @csrf
-                            <input type="file" id="fileInput" name="file" class="hidden" accept=".xlsx, .xls" />
-                            <button type="button" id="importButton"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center">
-                                <i class="fas fa-upload mr-2"></i> Import File
-                            </button>
-                        </form>
+                <div class="flex justify-end mb-4">
+                    <a href="{{ route('Operator.Siswa.create') }}"
+                        class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center">
+                        <i class="fas fa-plus mr-2"></i> Tambahkan
+                    </a>
+                </div>
+                <div class="mb-4">
+                    <label for="kelas" class="block text-sm font-medium text-gray-700">Pilih Kelas</label>
+                    <select id="kelas" name="kelas"
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                        <option value="">Kelas</option>
+                        @foreach ($kelas as $k)
+                            <option value="{{ $k->id_kelas }}">{{ $k->nama_kelas }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="bg-white p-4 md:p-6 rounded-lg shadow-md">
                     <h2 class="text-xl font-bold mb-4">Student Information</h2>
                     <div class="space-y-4">
                         @foreach ($siswa as $student)
-                            <div
-                                class="bg-gray-300 p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div class="bg-gray-300 p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center"
+                                data-kelas="{{ $student->id_kelas }}"> <!-- Tambahkan data-kelas -->
                                 <div class="mb-4 md:mb-0">
                                     <h4 class="font-bold">{{ $student->name }}</h4>
+                                    <h5 class="text-gray-600">Nama: {{ $student->nama_siswa }}</h5>
                                     <h5 class="text-gray-600">NIS: {{ $student->nis }}</h5>
+                                    <h5 class="text-gray-600">Email: {{ $student->user->email }}</h5>
+                                    <h5 class="text-gray-600">Status: {{ $student->status }}</h5>
                                 </div>
                                 <div class="flex space-x-5">
                                     <div>
-                                        <form action="{{ route('Operator.Siswa.destroy', $student->id) }}"
+                                        <form action="{{ route('Operator.Siswa.destroy', $student->id_siswa) }}"
                                             method="POST"
                                             onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun ini?');">
                                             @csrf
@@ -110,7 +118,8 @@
                                         </form>
                                     </div>
                                     <div>
-                                        <form action="{{ route('Operator.Siswa.edit', $student->id) }}" method="GET">
+                                        <form action="{{ route('Operator.Siswa.edit', $student->id_siswa) }}"
+                                            method="GET">
                                             <button type="submit" class="text-blue-500 flex items-center">
                                                 <i class="fas fa-edit mr-1"></i> EDIT
                                             </button>
@@ -123,29 +132,25 @@
                 </div>
             </div>
         </div>
+        </div>
         <script>
-            const importButton = document.getElementById('importButton');
-            const fileInput = document.getElementById('fileInput');
-            const importForm = document.getElementById('importForm');
+            document.getElementById('kelas').addEventListener('change', function() {
+                const selectedKelas = this.value;
+                const studentItems = document.querySelectorAll('.bg-gray-300'); 
+
+                studentItems.forEach(item => {
+                    const itemKelas = item.getAttribute('data-kelas'); 
+                    if (selectedKelas === '' || itemKelas === selectedKelas) {
+                        item.style.display = 'flex'; 
+                    } else {
+                        item.style.display = 'none'; 
+                    }
+                });
+            });
 
             document.querySelector('.dropdown').addEventListener('click', function() {
                 this.querySelector('.dropdown-menu').classList.toggle('hidden');
             });
-
-            importButton.addEventListener('click', handleImportButtonClick);
-            fileInput.addEventListener('change', handleFileInputChange);
-
-            function handleImportButtonClick(event) {
-                // Trigger the file input click
-                fileInput.click();
-            }
-
-            function handleFileInputChange(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    importForm.submit();
-                }
-            }
         </script>
     </body>
 

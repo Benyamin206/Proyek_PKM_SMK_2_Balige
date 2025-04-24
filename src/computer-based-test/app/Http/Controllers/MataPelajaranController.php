@@ -2,114 +2,84 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MataPelajaran;
+use App\Models\mata_pelajaran;
 use App\Models\Kurikulum;
+use App\Models\Operator;
 use Illuminate\Http\Request;
-use GuzzleHttp\Client;
 
 class MataPelajaranController extends Controller
 {
-    protected $client;
-
-    public function __construct()
-    {
-        $this->client = new Client([
-            'base_uri' => 'http://localhost:8080/', 
-        ]);
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
+        $mataPelajarans = mata_pelajaran::with(['operator', 'kurikulum'])->get();
+        $kurikulums = Kurikulum::all();
         $user = auth()->user();
-        $response = $this->client->get('mata-pelajaran');
-        $mataPelajarans = json_decode($response->getBody()->getContents(), true)['data'];
-        return view('Role.Operator.Mapel.index', compact('mataPelajarans', 'user'));
+        return view('Role.Operator.Mapel.index', compact('mataPelajarans', 'user', 'kurikulums'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $kurikulum = Kurikulum::all(); 
+        $kurikulums = Kurikulum::all();
         $user = auth()->user();
-        return view('Role.Operator.Mapel.create', compact('user', 'kurikulum'));
+        return view('Role.Operator.Mapel.create', compact('user', 'kurikulums'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
-            'nama_mata_pelajaran' => 'required|unique:mata_pelajarans',
-            'kurikulum_id' => 'required|exists:kurikulums,id',
+            'nama_mata_pelajaran' => 'required|unique:mata_pelajaran',
+            'id_kurikulum' => 'required|exists:kurikulum,id_kurikulum',
         ]);
 
-        $response = $this->client->post('mata-pelajaran', [
-            'json' => [
-                'nama_mata_pelajaran' => $request->nama_mata_pelajaran,
-                'user_id' => auth()->id(),
-                'kurikulum_id' => $request->kurikulum_id,
-            ]
+        $idUser  = auth()->user()->id;
+        $operator = Operator::where('id_user', $idUser )->first();
+
+        mata_pelajaran::create([
+            'nama_mata_pelajaran' => $request->nama_mata_pelajaran,
+            'id_operator' => $operator->id_operator,
+            'id_kurikulum' => $request->id_kurikulum,
         ]);
 
         return redirect()->route('Operator.MataPelajaran.index')
-            ->with('success', 'Mata Pelajaran created successfully.');
+            ->with('success', 'Mata Pelajaran berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $response = $this->client->get("mata-pelajaran/{$id}");
-        $mataPelajaran = json_decode($response->getBody()->getContents(), true)['data'];
+        $mataPelajaran = mata_pelajaran::with(['operator', 'kurikulum'])->findOrFail($id);
         return view('Role.Operator.Mapel.show', compact('mataPelajaran'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        $response = $this->client->get("mata-pelajaran/{$id}");
-        $mataPelajaran = json_decode($response->getBody()->getContents(), true)['data'];
-        $kurikulum = Kurikulum::all();
-        return view('Role.Operator.Mapel.edit', compact('mataPelajaran', 'kurikulum'));
+        $mataPelajaran = mata_pelajaran::findOrFail($id);
+        $kurikulums = Kurikulum::all();
+        return view('Role.Operator.Mapel.edit', compact('mataPelajaran', 'kurikulums'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'nama_mata_pelajaran' => 'required|unique:mata_pelajarans,nama_mata_pelajaran,' . $id,
-            'kurikulum_id' => 'required|exists:kurikulums,id',
+            'nama_mata_pelajaran' => 'required|unique:mata_pelajaran,nama_mata_pelajaran,' . $id . ',id_mata_pelajaran',
+            'id_kurikulum' => 'required|exists:kurikulum,id_kurikulum',
         ]);
 
-        $response = $this->client->put("mata-pelajaran/{$id}", [
-            'json' => [
-                'nama_mata_pelajaran' => $request->nama_mata_pelajaran,
-                'kurikulum_id' => $request->kurikulum_id,
-            ]
+        $mataPelajaran = mata_pelajaran::findOrFail($id);
+        $mataPelajaran->update([
+            'nama_mata_pelajaran' => $request->nama_mata_pelajaran,
+            'id_kurikulum' => $request->id_kurikulum,
         ]);
 
         return redirect()->route('Operator.MataPelajaran.index')
-            ->with('success', 'Mata Pelajaran updated successfully.');
+            ->with('success', 'Mata Pelajaran berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        $response = $this->client->delete("mata-pelajaran/{$id}");
+        $mataPelajaran = mata_pelajaran::findOrFail($id);
+        $mataPelajaran->delete();
+
         return redirect()->route('Operator.MataPelajaran.index')
-            ->with('success', 'Mata Pelajaran deleted successfully.');
+            ->with('success', 'Mata Pelajaran berhasil dihapus.');
     }
 }

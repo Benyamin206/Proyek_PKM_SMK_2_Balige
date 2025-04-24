@@ -80,17 +80,17 @@
         <!-- Main Content -->
         <div class="flex-1 p-4">
             <div class="space-y-4">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                    <select class="border border-gray-300 rounded-lg p-2">
-                        <option>Pilih Kurikulum</option>
-                        @foreach ($kurikulum as $kulum)
-                            <option value="{{ $kulum->id }}">{{ $k->nama_kelas }}</option>
-                        @endforeach
-                    </select>
-                </div>
                 <form action="{{ route('Operator.MataPelajaran.store') }}" method="POST" class="space-y-6">
                     @csrf
                     <div>
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                            <select class="border border-gray-300 rounded-lg p-2" name="id_kurikulum">
+                                <option value="">Pilih Kurikulum</option>
+                                @foreach ($kurikulums as $kulum)
+                                    <option value="{{ $kulum->id_kurikulum }}">{{ $kulum->nama_kurikulum }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <label class="block font-bold text-lg text-black">
                             Nama Mata Pelajaran <span class="text-red-500">*</span>
                         </label>

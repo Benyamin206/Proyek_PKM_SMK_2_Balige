@@ -38,12 +38,7 @@ class LoginRequest extends FormRequest
                 'identifier' => trans('auth.failed'),
             ]);
         }
-        if ($user->operator && $user->operator->status_aktif === 'tidak aktif') {
-            // Jangan logout user, hanya lemparkan error dengan pesan
-            throw ValidationException::withMessages([
-                'identifier' => ['Akun Anda tidak aktif.'],
-            ]);
-        }
+
     
         RateLimiter::clear($this->throttleKey());
     }
